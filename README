@@ -1,1 +1,2 @@
-Module to work with ``binary strings''
+Module to work with ``binary strings''.
+The interface is similar to the standart module ``string''.
