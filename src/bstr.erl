@@ -125,22 +125,24 @@ rev(<<Letter:1/bytes, RestBitString/bytes>>, Reversed) ->
 %%%
 %%%
 
-inv_char(C) when is_integer(C), $A =< C, C =< $Z -> C bxor 16#20;
-inv_char(C) when is_integer(C), $a =< C, C =< $z -> C bxor 16#20;
-inv_char(C) when is_integer(C), 16#D8 =< C, C =< 16#DE -> C bxor 16#20;
-inv_char(C) when is_integer(C), 16#F8 =< C, C =< 16#FE -> C bxor 16#20;
-inv_char(C) when is_integer(C), 16#C0 =< C, C =< 16#D6 -> C bxor 16#20;
-inv_char(C) when is_integer(C), 16#E0 =< C, C =< 16#F6 -> C bxor 16#20;
+-define(X(C), C bxor 16#20).
+
+inv_char(C) when is_integer(C), $A =< C, C =< $Z -> ?X(C);
+inv_char(C) when is_integer(C), $a =< C, C =< $z -> ?X(C);
+inv_char(C) when is_integer(C), 16#D8 =< C, C =< 16#DE -> ?X(C);
+inv_char(C) when is_integer(C), 16#F8 =< C, C =< 16#FE -> ?X(C);
+inv_char(C) when is_integer(C), 16#C0 =< C, C =< 16#D6 -> ?X(C);
+inv_char(C) when is_integer(C), 16#E0 =< C, C =< 16#F6 -> ?X(C);
 inv_char(C) -> C.
 
-lower_char(C) when is_integer(C), $A =< C, C =< $Z       -> C + 32;
-lower_char(C) when is_integer(C), 16#D8 =< C, C =< 16#DE -> C + 32;
-lower_char(C) when is_integer(C), 16#C0 =< C, C =< 16#D6 -> C + 32;
+lower_char(C) when is_integer(C), $A =< C, C =< $Z       -> ?X(C);
+lower_char(C) when is_integer(C), 16#D8 =< C, C =< 16#DE -> ?X(C);
+lower_char(C) when is_integer(C), 16#C0 =< C, C =< 16#D6 -> ?X(C);
 lower_char(C) -> C.
 
-upper_char(C) when is_integer(C), $a =< C, C =< $z       -> C - 32;
-upper_char(C) when is_integer(C), 16#F8 =< C, C =< 16#FE -> C - 32;
-upper_char(C) when is_integer(C), 16#E0 =< C, C =< 16#F6 -> C - 32;
+upper_char(C) when is_integer(C), $a =< C, C =< $z       -> ?X(C);
+upper_char(C) when is_integer(C), 16#F8 =< C, C =< 16#FE -> ?X(C);
+upper_char(C) when is_integer(C), 16#E0 =< C, C =< 16#F6 -> ?X(C);
 upper_char(C) -> C.
 
 -ifdef(TEST).
