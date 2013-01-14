@@ -84,7 +84,7 @@ entry(BitString, SubBitString) ->
             true
     end.
 
-inverse(BitString) ->
+inverse(BitString) ->                           % Don't work
     << <<(C bxor 16#20)/utf8>> || <<C/utf8>> <= BitString>>.
 
 to_lower(BitString) ->
@@ -102,10 +102,15 @@ lstrip(<<A:1/bytes, Rest/bytes>>, A) ->
 lstrip(Result, _A) ->
     Result.
 
-rstrip(BitString0, A) ->
-    RevBitString = rev(BitString0, <<>>),
-    BitString1 = lstrip(RevBitString, A),
-    rev(BitString1, <<>>).
+rstrip(<<Ch:1/bytes, Rest/bytes>>, Ch) ->
+    case rstrip(Rest, Ch) of
+        <<>> -> <<>>;
+        Tail -> <<Ch/bytes, Tail/bytes>>
+    end;
+rstrip(<<Co:1/bytes, Rest/bytes>>, Ch) ->
+    <<Co/bytes, (rstrip(Rest, Ch))/bytes>>;
+rstrip(<<>>, _Ch) ->
+    <<>>.
 
 bstrip(BitString0, A) ->
     BitString1 = lstrip(BitString0, A),
