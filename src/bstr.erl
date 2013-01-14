@@ -84,8 +84,8 @@ entry(BitString, SubBitString) ->
             true
     end.
 
-inverse(BitString) ->                           % Don't work
-    << <<(C bxor 16#20)/utf8>> || <<C/utf8>> <= BitString>>.
+inverse(BitString) ->
+    << <<(inv_char(C))/utf8>> || <<C/utf8>> <= BitString>>.
 
 to_lower(BitString) ->
     << <<(lower_char(C))/utf8>> || <<C/utf8>> <= BitString>>.
@@ -125,6 +125,14 @@ rev(<<Letter:1/bytes, RestBitString/bytes>>, Reversed) ->
 %%%
 %%%
 
+inv_char(C) when is_integer(C), $A =< C, C =< $Z -> C bxor 16#20;
+inv_char(C) when is_integer(C), $a =< C, C =< $z -> C bxor 16#20;
+inv_char(C) when is_integer(C), 16#D8 =< C, C =< 16#DE -> C bxor 16#20;
+inv_char(C) when is_integer(C), 16#F8 =< C, C =< 16#FE -> C bxor 16#20;
+inv_char(C) when is_integer(C), 16#C0 =< C, C =< 16#D6 -> C bxor 16#20;
+inv_char(C) when is_integer(C), 16#E0 =< C, C =< 16#F6 -> C bxor 16#20;
+inv_char(C) -> C.
+
 lower_char(C) when is_integer(C), $A =< C, C =< $Z       -> C + 32;
 lower_char(C) when is_integer(C), 16#D8 =< C, C =< 16#DE -> C + 32;
 lower_char(C) when is_integer(C), 16#C0 =< C, C =< 16#D6 -> C + 32;
@@ -138,16 +146,16 @@ upper_char(C) -> C.
 -ifdef(TEST).
 -include_lib("eunit/include/eunit.hrl").
 bstr_test() ->
-    ?assertMatch(<<"test t">>, bstr:strip(<<"   test t  ">>, both)),
-    ?assertMatch(<<"test">>,   bstr:strip(<<"test">>, both)),
-    ?assertMatch(<<"t0t1">>,   bstr:concat(<<"t0">>, <<"t1">>)),
-    ?assertMatch(true,         bstr:entry(<<"testsubstringtest">>, <<"substring">>)),
-    ?assertMatch(false,        bstr:entry(<<"testsubstringtest">>, <<"substring0">>)),
+    ?assertMatch(<<"test, t">>, bstr:strip(<<"   test, t  ">>, both)),
+    ?assertMatch(<<"test!!">>,  bstr:strip(<<"test!!">>, both)),
+    ?assertMatch(<<"t0:t1:">>,  bstr:concat(<<"t0:">>, <<"t1:">>)),
+    ?assertMatch(true,         bstr:entry(<<"test//substring//test">>, <<"substring">>)),
+    ?assertMatch(false,        bstr:entry(<<"test//substring//test">>, <<"substring0">>)),
     ?assertMatch(<<"543210">>, bstr:reverse(<<"012345">>)),
     ?assertMatch(<<"tetete">>, bstr:copies(<<"te">>, 3)),
     ?assertMatch([],           bstr:tokens(<<"      ">>, <<" ">>)),
     ?assertMatch([<<" ">>],    bstr:tokens(<<" ">>, <<",">>)),
-    ?assertMatch(<<"TESTTEST">>, bstr:to_upper(<<"TestTest">>)),
+    ?assertMatch(<<"HTTP://&TESTTEST">>, bstr:to_upper(<<"http://&TestTest">>)),
     ?assertMatch(<<"testtest">>, bstr:to_lower(<<"TESTTest">>)),
     ?assertMatch(<<"t1;t2;t3">>, bstr:join([<<"t1">>, <<"t2">>, <<"t3">>], <<";">>)),
     ?assertMatch([<<"test0">>, <<"test1">>], bstr:tokens(<<"test0,,test1,,,">>, <<",">>)).
